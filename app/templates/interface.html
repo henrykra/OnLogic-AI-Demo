@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Lego Demo</title>
+        <meta name="author" content="OnLogic">
+        <meta name="description" content="Interface for interacting with the OnLogic lego AI detection demo. ">
+        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}" type="text/css">
+    </head>
+
+    <body>
+        <div class="feed">
+            
+            {% if detect %}
+                <img src="{{ url_for('feed_detect') }}" alt="error getting live detection feed">
+            {% else %}
+                <img src="{{ url_for('feed') }}" alt="error getting live feed">
+            {% endif %}
+
+        </div>
+
+        <div class="inputs">
+            <h2>Select a Figure for Removal: </h1>
+            <form id="detectForm", action="#" method="POST">
+                <label for="input1" {% if classes[0] %} style="border: solid red" {% endif %}>
+                    <img src="{{url_for('static', filename='captain_antilles_final.png')}}" alt="Captain Antilles">
+                    <input type="radio" id="input1" name="input1" value="1" onchange="this.form.submit()">
+                </label>
+                <label for="input2" {% if classes[1] %} style="border: solid red" {% endif %}>
+                    <img src="{{url_for('static', filename='storm_trooper_final.png')}}" alt="Stormtrooper">
+                    <input type="radio" id="input2" name="input2" value="2" onchange="this.form.submit()">
+                </label>
+                <label for="input3" {% if classes[2] %} style="border: solid red" {% endif %}>
+                    <img id="rebel" src="{{url_for('static', filename='rebel_trooper_final.png')}}" width="300px" height="400px" alt="Rebel Trooper">
+                    <input type="radio" id="input3" name="input3" value="3" onchange="this.form.submit()">
+                </label>
+                <label for="input4" {% if classes[3] %} style="border: solid red"{% endif %}>
+                    <img id="clone" src="{{url_for('static', filename='clone_trooper_final.png')}}" alt="Clone Trooper">
+                    <input type="radio" id="input4" name="input4" value="4" onchange="this.form.submit()">
+                </label>
+                <a href="/">Reset</a>
+            </form>
+        </div>
+
+        <script>
+
+        </script>
+
+    </body>
+
+</html>
