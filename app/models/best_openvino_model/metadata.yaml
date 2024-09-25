@@ -1,0 +1,17 @@
+description: Ultralytics best model trained on drive/MyDrive/legodemo/demo_data/data.yaml
+author: Ultralytics
+date: '2024-09-06T19:51:52.440264'
+version: 8.2.89
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: Captain Antilles
+  1: Imperial Stormtrooper
+  2: Rebel Trooper
+  3: Clone Trooper
