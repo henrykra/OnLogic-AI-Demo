@@ -1,12 +1,11 @@
 from flask import Flask, render_template, Response, request
 import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 import time
-import requests
 from ultralytics import YOLO
 import openvino as ov
 import torch
+import serial
+from serial.tools import list_ports as system_ports
 #TODO: import from livedetection.py instead of copying fucntions
 
 app = Flask(__name__)
@@ -23,12 +22,31 @@ label_map = {
     3: "Clone Trooper"
 }
 
-IP_ADDRESS = "192.168.4.1"
-CONFIDENCE_LEVEL = .99
-WAIT_TIME_CONSTANT = .35
+CONFIDENCE_LEVEL = .8
+WAIT_TIME_CONSTANT = .25
 IOU_LEVEL = .7
 FPS_LIMIT = 10
+MCU_VID_PID = '353F:A104'
+CMD_OFF = 'dio set DIO0 0 false'
+CMD_ON = 'dio set DIO0 0 true'
 
+"""
+Setup for DIO
+"""
+def get_device_port(dev_id, location=None):
+    """Scan and return the port of the target device."""
+    all_ports = system_ports.comports()
+    for port in sorted(all_ports):
+        print(port.hwid)
+        if dev_id in port.hwid:
+            if location and location in port.location:
+                print(f'Port: {port}\nPort Location: {port.location}\nHardware ID: {port.hwid}\nDevice: {port.device}')
+                print('*'*15)
+                return port.device
+    return None
+
+mgmt_port = get_device_port(MCU_VID_PID, "3-8:1.0")
+ser = serial.Serial(mgmt_port, 9600)
 
 
 
@@ -123,6 +141,19 @@ def draw_boxes(result, class_inputs):
     return img
 
 
+def activate_air(ser):
+    ser.write(b'\r\n')
+
+    ser.write(CMD_ON.encode())
+    ser.write(b'\r\n')
+    print(ser.read(ser.inWaiting()))
+
+
+    time.sleep(0.03)
+    ser.write(CMD_OFF.encode())
+    ser.write(b'\r\n')
+
+
 model = initialize_model()
 cam = cv2.VideoCapture(0) 
 
@@ -132,8 +163,8 @@ def gather_feed():
     while True:
         _, img = cam.read()
 
-
-        time.sleep(max(0, 1 / FPS_LIMIT - (time.time() - t)))
+        if FPS_LIMIT:
+            time.sleep(max(0, 1 / FPS_LIMIT - (time.time() - t)))
         t = time.time()
 
         _, frame = cv2.imencode('.jpg', img)
@@ -190,7 +221,7 @@ def parse_result(result, class_inputs, queue):
         if time.time() >= t:
             # if its time to activate, make a call to the controller
             print('Air Activated')
-            requests.get('http://' + IP_ADDRESS + '/button/air/press')
+            activate_air(ser)
             queue.pop(0)
             # remove the time once the call is made
         
@@ -241,8 +272,8 @@ def gather_img(class_inputs, blast_air):
         result = result_deadzone(result)
 
         # limit the detection to 10 fps, to avoid 100% gpu utilization
-        
-        time.sleep(max(0, 1 / FPS_LIMIT - (time.time() - t)))
+        if FPS_LIMIT:
+            time.sleep(max(0, 1 / FPS_LIMIT - (time.time() - t)))
 
         t = time.time()
 
