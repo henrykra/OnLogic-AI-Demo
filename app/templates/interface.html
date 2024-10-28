@@ -13,9 +13,9 @@
         <div class="feed">
             
             {% if detect %}
-                <img src="{{ url_for('feed_detect') }}" alt="error getting live detection feed">
+                <img src="{{ url_for('feed_detect') }}" alt="           Loading...">
             {% else %}
-                <img src="{{ url_for('feed') }}" alt="error getting live feed">
+                <img src="{{ url_for('feed') }}" alt="              Loading...">
             {% endif %}
 
         </div>
